@@ -29,8 +29,8 @@ unsafe fn memcpy_loop(src: *const u8, dst: *mut u8, count: usize) {
     }
 }
 
-#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx2"))]
-unsafe fn memcpy_avx2(mut src: *const u8, mut dst: *mut u8, count: usize) {
+#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx"))]
+unsafe fn memcpy_avx(mut src: *const u8, mut dst: *mut u8, count: usize) {
     for _ in 0..(count / 32) {
         // _mm256_stream_load_si256 is missing, sigh
         let tmp = _mm256_load_si256(src as *const __m256i);
@@ -110,8 +110,8 @@ fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("memcpy");
     group.bench_function("std", |b| b.iter(|| unsafe { memcpy_std(black_box(src), black_box(dst), black_box(len)) }));
     group.bench_function("loop", |b| b.iter(|| unsafe { memcpy_loop(black_box(src), black_box(dst), black_box(len)) }));
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx2"))]
-    group.bench_function("avx2", |b| b.iter(|| unsafe { memcpy_avx2(black_box(src), black_box(dst), black_box(len)) }));
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx"))]
+    group.bench_function("avx", |b| b.iter(|| unsafe { memcpy_avx(black_box(src), black_box(dst), black_box(len)) }));
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx512f"))]
     group.bench_function("avx512", |b| b.iter(|| unsafe { memcpy_avx512(black_box(src), black_box(dst), black_box(len)) }));
     #[cfg(all(target_arch = "aarch64", target_feature = "neon"))]
@@ -153,9 +153,9 @@ mod tests {
     }
 
     #[test]
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx2"))]
-    fn test_memcpy_avx2() {
-        test!(memcpy_avx2);
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx"))]
+    fn test_memcpy_avx() {
+        test!(memcpy_avx);
     }
 
     #[test]
