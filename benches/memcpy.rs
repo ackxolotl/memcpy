@@ -59,10 +59,7 @@ unsafe fn memcpy_neon(mut src: *const u8, mut dst: *mut u8, count: usize) {
     }
 }
 
-fn criterion_benchmark(c: &mut Criterion) {
-    let len = 1 << 28; // 256 MiB to copy
-
-    // source region
+unsafe fn create_regions(len: usize) -> (*const u8, *mut u8) {
     let src = unsafe {
         libc::mmap(
             std::ptr::null_mut(),
@@ -74,7 +71,6 @@ fn criterion_benchmark(c: &mut Criterion) {
         )
     } as *mut u8;
 
-    // destination region
     let dst = unsafe {
         libc::mmap(
             std::ptr::null_mut(),
@@ -90,6 +86,20 @@ fn criterion_benchmark(c: &mut Criterion) {
     let s = unsafe { std::slice::from_raw_parts_mut(src, len) };
     f.read_exact(s).unwrap();
 
+    (src, dst)
+}
+
+unsafe fn free_regions(src: *const u8, dst: *mut u8, len: usize) {
+    libc::munmap(src as *mut c_void, len);
+    libc::munmap(dst as *mut c_void, len);
+}
+
+fn criterion_benchmark(c: &mut Criterion) {
+    let len = 1 << 28; // 256 MiB to copy
+
+    // source and destination region, source is filled with random data
+    let (src, dst) = unsafe { create_regions(len) };
+
     // benchmarks
     let mut group = c.benchmark_group("memcpy");
     group.bench_function("std", |b| b.iter(|| unsafe { memcpy_std(black_box(src), black_box(dst), black_box(len)) }));
@@ -103,11 +113,58 @@ fn criterion_benchmark(c: &mut Criterion) {
     group.finish();
 
     // cleanup
-    unsafe {
-        libc::munmap(src as *mut c_void, len);
-        libc::munmap(dst as *mut c_void, len);
-    }
+    unsafe { free_regions(src, dst, len) };
 }
 
 criterion_group!(benches, criterion_benchmark);
 criterion_main!(benches);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const LEN: usize = 1 << 17; // 128 KiB
+
+    macro_rules! test {
+        ($function:tt) => {
+            unsafe {
+                let (src, dst) = create_regions(LEN); // 128 KiB
+                $function(src, dst, LEN);
+                assert_eq!(memcmp(src, dst, LEN), 0);
+                free_regions(src, dst, LEN);
+            }
+        };
+    }
+
+    #[test]
+    fn test_memcpy_std() {
+        test!(memcpy_std);
+    }
+
+    #[test]
+    fn test_memcpy_loop() {
+        test!(memcpy_loop);
+    }
+
+    #[test]
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx2"))]
+    fn test_memcpy_avx2() {
+        test!(memcpy_avx2);
+    }
+
+    #[test]
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx512f"))]
+    fn test_memcpy_avx512() {
+        test!(memcpy_avx512);
+    }
+
+    #[test]
+    #[cfg(all(target_arch = "aarch64", target_feature = "neon"))]
+    fn test_memcpy_neon() {
+        test!(memcpy_neon);
+    }
+
+    unsafe fn memcmp(s1: *const u8, s2: *const u8, len: usize) -> i32 {
+        libc::memcmp(s1 as *const c_void, s2 as *const c_void, len as libc::size_t)
+    }
+}

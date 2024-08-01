@@ -11,3 +11,7 @@ rand = "0.8"
 [[bench]]
 name = "memcpy"
 harness = false
+
+[[test]]
+name = "memcpy"
+path = "benches/memcpy.rs"
