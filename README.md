@@ -32,6 +32,12 @@ with 16 GiB (LPDDR4X-4266)
 
 ![Performance](results/apple-m1-lpddr4x-16gib.svg "Performance")
 
+### Apple M1 Pro
+
+with 16 GiB (LPDDR5-6400)
+
+![Performance](results/apple-m1-pro-lpddr5-16gib.svg "Performance")
+
 ### Apple M2
 
 with 16 GiB (LPDDR5-6400)
