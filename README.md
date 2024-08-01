@@ -26,6 +26,12 @@ with 16 GiB (LPDDR4X-4266)
 
 ![Performance](results/apple-m1-lpddr4x-16gib.svg "Performance")
 
+### Apple M2
+
+with 16 GiB (LPDDR5-6400)
+
+![Performance](results/apple-m2-lpddr5-16gib.svg "Performance")
+
 ## May I add my results?
 
 Yes, please!
