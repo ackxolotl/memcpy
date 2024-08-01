@@ -29,7 +29,7 @@ unsafe fn memcpy_loop(src: *const u8, dst: *mut u8, count: usize) {
     }
 }
 
-#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx"))]
+#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx"))]
 unsafe fn memcpy_avx(mut src: *const u8, mut dst: *mut u8, count: usize) {
     for _ in 0..(count / 32) {
         // _mm256_stream_load_si256 is missing, sigh
@@ -41,7 +41,7 @@ unsafe fn memcpy_avx(mut src: *const u8, mut dst: *mut u8, count: usize) {
     }
 }
 
-#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx512f"))]
+#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx512f"))]
 unsafe fn memcpy_avx512(mut src: *const u8, mut dst: *mut u8, count: usize) {
     for _ in 0..(count / 64) {
         // _mm512_stream_load_si512 is missing, sigh
@@ -110,9 +110,9 @@ fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("memcpy");
     group.bench_function("std", |b| b.iter(|| unsafe { memcpy_std(black_box(src), black_box(dst), black_box(len)) }));
     group.bench_function("loop", |b| b.iter(|| unsafe { memcpy_loop(black_box(src), black_box(dst), black_box(len)) }));
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx"))]
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx"))]
     group.bench_function("avx", |b| b.iter(|| unsafe { memcpy_avx(black_box(src), black_box(dst), black_box(len)) }));
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx512f"))]
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx512f"))]
     group.bench_function("avx512", |b| b.iter(|| unsafe { memcpy_avx512(black_box(src), black_box(dst), black_box(len)) }));
     #[cfg(all(target_arch = "aarch64", target_feature = "neon"))]
     group.bench_function("neon", |b| b.iter(|| unsafe { memcpy_neon(black_box(src), black_box(dst), black_box(len)) }));
@@ -153,13 +153,13 @@ mod tests {
     }
 
     #[test]
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx"))]
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx"))]
     fn test_memcpy_avx() {
         test!(memcpy_avx);
     }
 
     #[test]
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "avx512f"))]
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx512f"))]
     fn test_memcpy_avx512() {
         test!(memcpy_avx512);
     }
