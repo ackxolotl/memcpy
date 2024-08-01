@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_macros)]
+
 #![feature(avx512_target_feature)]
 #![cfg_attr(any(target_arch = "x86", target_arch = "x86_64"), feature(stdarch_x86_avx512))]
 
