@@ -2,6 +2,7 @@
 #![allow(unused_macros)]
 
 #![feature(avx512_target_feature)]
+#![cfg_attr(target_arch = "aarch64", feature(stdarch_aarch64_prefetch))]
 #![cfg_attr(any(target_arch = "x86", target_arch = "x86_64"), feature(stdarch_x86_avx512))]
 
 use criterion::{criterion_group, criterion_main, Criterion};
@@ -55,9 +56,11 @@ unsafe fn memcpy_avx512(mut src: *const u8, mut dst: *mut u8, count: usize) {
 #[cfg(all(target_arch = "aarch64", target_feature = "neon"))]
 unsafe fn memcpy_neon(mut src: *const u8, mut dst: *mut u8, count: usize) {
     for _ in 0..(count / 16) {
+        // we'd probably need multiple loads here to profit from vectorization
         let tmp = vld1q_u8(src);
         vst1q_u8(dst, tmp);
         src = src.add(16);
+        _prefetch::<_PREFETCH_READ, _PREFETCH_LOCALITY0>(src as *const i8);
         dst = dst.add(16);
     }
 }
