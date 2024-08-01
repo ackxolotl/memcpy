@@ -8,6 +8,12 @@ RUSTFLAGS="-Ctarget-cpu=native" cargo bench
 
 ## Results
 
+### AMD EPYC 9454P 48-Core Processor
+
+with 12x 32 GiB Micron MTC20F2085S1RC48BA1 (DDR5-4800)
+
+![Performance](results/amd-epyc-9454p-ddr5-384gib-micron.svg "Performance")
+
 ### AMD Ryzen 7 1800X Eight-Core Processor
 
 with 4x 8 GiB G.SKILL Ripjaws 4 (DDR4-2133)
