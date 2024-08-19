@@ -50,6 +50,12 @@ with 32 GiB (LPDDR5-6400)
 
 ![Performance](results/apple-m2-max-lpddr5-32gib.svg "Performance")
 
+### Apple M3 Pro
+
+with 36 GiB (LPDDR5-6400)
+
+![Performance](results/apple-m3-pro-lpddr5-36gib.svg "Performance")
+
 ## May I add my results?
 
 Yes, please!
