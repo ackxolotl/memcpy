@@ -1,6 +1,6 @@
 # memcpy
 
-How fast is `memcpy` with SIMD? Run the benchmarks:
+How fast can we `memcpy` 256 MiB of data? Run the benchmarks:
 
 ```sh
 RUSTFLAGS="-Ctarget-cpu=native" cargo bench
