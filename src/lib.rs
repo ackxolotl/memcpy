@@ -21,39 +21,42 @@ pub unsafe fn memcpy_loop(src: *const u8, dst: *mut u8, count: usize) {
 
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx"))]
 pub unsafe fn memcpy_avx(mut src: *const u8, mut dst: *mut u8, count: usize) {
-    for _ in 0..(count / 32) {
+    let vector_size = std::mem::size_of::<__m256i>(); // 32 bytes
+    for _ in 0..(count / vector_size) {
         // _mm256_stream_load_si256 is missing, sigh
         let tmp = _mm256_load_si256(src as *const __m256i);
         _mm256_stream_si256(dst as *mut __m256i, tmp);
-        src = src.add(32);
+        src = src.add(vector_size);
         _mm_prefetch::<_MM_HINT_T2>(src as *const i8);
-        dst = dst.add(32);
+        dst = dst.add(vector_size);
     }
     _mm_sfence();
 }
 
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx512f"))]
 pub unsafe fn memcpy_avx512(mut src: *const u8, mut dst: *mut u8, count: usize) {
-    for _ in 0..(count / 64) {
+    let vector_size = std::mem::size_of::<__m512i>(); // 64 bytes
+    for _ in 0..(count / vector_size) {
         // _mm512_stream_load_si512 is missing, sigh
         let tmp = _mm512_load_si512(src as *const i32);
         _mm512_stream_si512(dst as *mut i64, tmp);
-        src = src.add(64);
+        src = src.add(vector_size);
         _mm_prefetch::<_MM_HINT_T2>(src as *const i8);
-        dst = dst.add(64);
+        dst = dst.add(vector_size);
     }
     _mm_sfence();
 }
 
 #[cfg(all(target_arch = "aarch64", target_feature = "neon"))]
 pub unsafe fn memcpy_neon(mut src: *const u8, mut dst: *mut u8, count: usize) {
-    for _ in 0..(count / 16) {
+    let vector_size = std::mem::size_of::<uint8x16_t>(); // 16 bytes
+    for _ in 0..(count / vector_size) {
         // we'd probably need multiple loads here to profit from vectorization
         let tmp = vld1q_u8(src);
         vst1q_u8(dst, tmp);
-        src = src.add(16);
+        src = src.add(vector_size);
         _prefetch::<_PREFETCH_READ, _PREFETCH_LOCALITY0>(src as *const i8);
-        dst = dst.add(16);
+        dst = dst.add(vector_size);
     }
 }
 
