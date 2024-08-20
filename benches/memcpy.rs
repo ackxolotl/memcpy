@@ -39,6 +39,7 @@ unsafe fn memcpy_avx(mut src: *const u8, mut dst: *mut u8, count: usize) {
         _mm_prefetch::<_MM_HINT_T2>(src as *const i8);
         dst = dst.add(32);
     }
+    _mm_sfence();
 }
 
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx512f"))]
@@ -51,6 +52,7 @@ unsafe fn memcpy_avx512(mut src: *const u8, mut dst: *mut u8, count: usize) {
         _mm_prefetch::<_MM_HINT_T2>(src as *const i8);
         dst = dst.add(64);
     }
+    _mm_sfence();
 }
 
 #[cfg(all(target_arch = "aarch64", target_feature = "neon"))]
