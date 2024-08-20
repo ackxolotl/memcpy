@@ -7,7 +7,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let len = 1 << 28;
 
     // source and destination region, source is filled with random data
-    let (src, dst) = unsafe { memcpy::create_regions(len) };
+    let (src, dst) = unsafe { black_box(memcpy::create_regions(len)) };
 
     // benchmarks
     let mut group = c.benchmark_group("memcpy");
@@ -22,7 +22,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     group.finish();
 
     // cleanup
-    unsafe { memcpy::free_regions(src, dst, len) };
+    unsafe { black_box(memcpy::free_regions(src, dst, len)) };
 }
 
 criterion_group!(benches, criterion_benchmark);
