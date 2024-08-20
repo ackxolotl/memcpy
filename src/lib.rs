@@ -2,10 +2,6 @@
 #![cfg_attr(target_arch = "aarch64", feature(stdarch_aarch64_prefetch))]
 #![cfg_attr(any(target_arch = "x86", target_arch = "x86_64"), feature(stdarch_x86_avx512))]
 
-use std::ffi::c_void;
-use std::fs::File;
-use std::io::Read;
-
 #[cfg(target_arch = "x86")]
 use std::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
@@ -62,6 +58,8 @@ pub unsafe fn memcpy_neon(mut src: *const u8, mut dst: *mut u8, count: usize) {
 }
 
 pub unsafe fn create_regions(len: usize) -> (*const u8, *mut u8) {
+    use std::io::Read;
+
     let src = unsafe {
         libc::mmap(
             std::ptr::null_mut(),
@@ -84,7 +82,7 @@ pub unsafe fn create_regions(len: usize) -> (*const u8, *mut u8) {
         )
     } as *mut u8;
 
-    let mut f = File::open("/dev/urandom").unwrap();
+    let mut f = std::fs::File::open("/dev/urandom").unwrap();
     let s = unsafe { std::slice::from_raw_parts_mut(src, len) };
     f.read_exact(s).unwrap();
 
@@ -92,8 +90,8 @@ pub unsafe fn create_regions(len: usize) -> (*const u8, *mut u8) {
 }
 
 pub unsafe fn free_regions(src: *const u8, dst: *mut u8, len: usize) {
-    libc::munmap(src as *mut c_void, len);
-    libc::munmap(dst as *mut c_void, len);
+    libc::munmap(src as *mut libc::c_void, len);
+    libc::munmap(dst as *mut libc::c_void, len);
 }
 
 #[cfg(test)]
@@ -142,6 +140,6 @@ mod tests {
     }
 
     unsafe fn memcmp(s1: *const u8, s2: *const u8, len: usize) -> i32 {
-        libc::memcmp(s1 as *const c_void, s2 as *const c_void, len as libc::size_t)
+        libc::memcmp(s1 as *const libc::c_void, s2 as *const libc::c_void, len as libc::size_t)
     }
 }
