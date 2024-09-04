@@ -20,6 +20,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: RUSTFLAGS="-Ctarget-cpu=native" cargo build --verbose
+      run: RUSTFLAGS="-Ctarget-cpu=native" cargo build
     - name: Run tests
-      run: RUSTFLAGS="-Ctarget-cpu=native" cargo test --verbose
+      run: RUSTFLAGS="-Ctarget-cpu=native" cargo test
