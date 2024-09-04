@@ -57,7 +57,8 @@ pub unsafe fn memcpy_neon(mut src: *const u8, mut dst: *mut u8, count: usize) {
         src = src.add(vector_size);
         _prefetch::<_PREFETCH_READ, _PREFETCH_LOCALITY0>(src as *const i8);
         dst = dst.add(vector_size);
-        _prefetch::<_PREFETCH_WRITE, _PREFETCH_LOCALITY0>(dst as *const i8);
+        // this hint messes up performance somehow :-/
+        // _prefetch::<_PREFETCH_WRITE, _PREFETCH_LOCALITY0>(dst as *const i8);
     }
 }
 
