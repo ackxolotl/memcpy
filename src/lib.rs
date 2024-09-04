@@ -27,7 +27,7 @@ pub unsafe fn memcpy_avx(mut src: *const u8, mut dst: *mut u8, count: usize) {
         let tmp = _mm256_load_si256(src as *const __m256i);
         _mm256_stream_si256(dst as *mut __m256i, tmp);
         src = src.add(vector_size);
-        _mm_prefetch::<_MM_HINT_T2>(src as *const i8);
+        _mm_prefetch::<_MM_HINT_NTA>(src as *const i8);
         dst = dst.add(vector_size);
     }
     _mm_sfence();
@@ -41,7 +41,7 @@ pub unsafe fn memcpy_avx512(mut src: *const u8, mut dst: *mut u8, count: usize) 
         let tmp = _mm512_load_si512(src as *const i32);
         _mm512_stream_si512(dst as *mut i64, tmp);
         src = src.add(vector_size);
-        _mm_prefetch::<_MM_HINT_T2>(src as *const i8);
+        _mm_prefetch::<_MM_HINT_NTA>(src as *const i8);
         dst = dst.add(vector_size);
     }
     _mm_sfence();
@@ -57,6 +57,7 @@ pub unsafe fn memcpy_neon(mut src: *const u8, mut dst: *mut u8, count: usize) {
         src = src.add(vector_size);
         _prefetch::<_PREFETCH_READ, _PREFETCH_LOCALITY0>(src as *const i8);
         dst = dst.add(vector_size);
+        _prefetch::<_PREFETCH_WRITE, _PREFETCH_LOCALITY0>(dst as *const i8);
     }
 }
 
