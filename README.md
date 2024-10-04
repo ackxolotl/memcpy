@@ -8,6 +8,12 @@ RUSTFLAGS="-Ctarget-cpu=native" cargo bench
 
 ## Results
 
+### Intel(R) Xeon(R) CPU E5-2660 v2
+
+DDR3-1866
+
+![Performance](results/intel-xeon-e5-2660-v2-ddr3-256gib-samsung.svg "Performance")
+
 ### AMD EPYC 9454P 48-Core Processor
 
 DDR5-4800
