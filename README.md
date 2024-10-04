@@ -14,6 +14,12 @@ DDR3-1866
 
 ![Performance](results/intel-xeon-e5-2660-v2-ddr3-256gib-samsung.svg "Performance")
 
+### AMD EPYC 7713 64-Core Processor
+
+DDR4-3200
+
+![Performance](results/amd-epyc-7713-ddr4-1024gib-samsung.svg "Performance")
+
 ### AMD EPYC 9454P 48-Core Processor
 
 DDR5-4800
