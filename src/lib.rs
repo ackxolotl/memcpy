@@ -34,9 +34,20 @@ pub unsafe fn memcpy_movsb(src: *const u8, dst: *mut u8, count: usize) {
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx"))]
 pub unsafe fn memcpy_avx(mut src: *const u8, mut dst: *mut u8, count: usize) {
     let vector_size = std::mem::size_of::<__m256i>(); // 32 bytes
-    for _ in 0..(count / vector_size) {
-        // _mm256_stream_load_si256 is missing, sigh
-        let tmp = _mm256_load_si256(src as *const __m256i);
+    for _ in 0..(count / (vector_size * 4)) {
+        let mut tmp = _mm256_stream_load_si256(src as *const __m256i);
+        _mm256_stream_si256(dst as *mut __m256i, tmp);
+        src = src.add(vector_size);
+        dst = dst.add(vector_size);
+        tmp = _mm256_stream_load_si256(src as *const __m256i);
+        _mm256_stream_si256(dst as *mut __m256i, tmp);
+        src = src.add(vector_size);
+        dst = dst.add(vector_size);
+        tmp = _mm256_stream_load_si256(src as *const __m256i);
+        _mm256_stream_si256(dst as *mut __m256i, tmp);
+        src = src.add(vector_size);
+        dst = dst.add(vector_size);
+        tmp = _mm256_stream_load_si256(src as *const __m256i);
         _mm256_stream_si256(dst as *mut __m256i, tmp);
         src = src.add(vector_size);
         _mm_prefetch::<_MM_HINT_NTA>(src as *const i8);
@@ -48,10 +59,21 @@ pub unsafe fn memcpy_avx(mut src: *const u8, mut dst: *mut u8, count: usize) {
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx512f"))]
 pub unsafe fn memcpy_avx512(mut src: *const u8, mut dst: *mut u8, count: usize) {
     let vector_size = std::mem::size_of::<__m512i>(); // 64 bytes
-    for _ in 0..(count / vector_size) {
-        // _mm512_stream_load_si512 is missing, sigh
-        let tmp = _mm512_load_si512(src as *const i32);
-        _mm512_stream_si512(dst as *mut i64, tmp);
+    for _ in 0..(count / (vector_size * 4)) {
+        let mut tmp = _mm512_stream_load_si512(src as *const __m512i);
+        _mm512_stream_si512(dst as *mut i32, tmp);
+        src = src.add(vector_size);
+        dst = dst.add(vector_size);
+        tmp = _mm512_stream_load_si512(src as *const __m512i);
+        _mm512_stream_si512(dst as *mut i32, tmp);
+        src = src.add(vector_size);
+        dst = dst.add(vector_size);
+        tmp = _mm512_stream_load_si512(src as *const __m512i);
+        _mm512_stream_si512(dst as *mut i32, tmp);
+        src = src.add(vector_size);
+        dst = dst.add(vector_size);
+        tmp = _mm512_stream_load_si512(src as *const __m512i);
+        _mm512_stream_si512(dst as *mut i32, tmp);
         src = src.add(vector_size);
         _mm_prefetch::<_MM_HINT_NTA>(src as *const i8);
         dst = dst.add(vector_size);
