@@ -17,6 +17,8 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     group.bench_function("std", |b| b.iter(|| unsafe { memcpy::memcpy_std(black_box(src), black_box(dst), black_box(len)) }));
     group.bench_function("loop", |b| b.iter(|| unsafe { memcpy::memcpy_loop(black_box(src), black_box(dst), black_box(len)) }));
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    group.bench_function("movsb", |b| b.iter(|| unsafe { memcpy::memcpy_movsb(black_box(src), black_box(dst), black_box(len)) }));
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx"))]
     group.bench_function("avx", |b| b.iter(|| unsafe { memcpy::memcpy_avx(black_box(src), black_box(dst), black_box(len)) }));
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx512f"))]

@@ -9,6 +9,8 @@ use std::arch::x86_64::*;
 #[cfg(target_arch = "aarch64")]
 use std::arch::aarch64::*;
 
+use std::arch::asm;
+
 pub unsafe fn memcpy_std(src: *const u8, dst: *mut u8, count: usize) {
     std::ptr::copy_nonoverlapping(src, dst, count);
 }
@@ -17,6 +19,16 @@ pub unsafe fn memcpy_loop(src: *const u8, dst: *mut u8, count: usize) {
     for i in 0..count {
         *dst.add(i) = *src.add(i);
     }
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+pub unsafe fn memcpy_movsb(src: *const u8, dst: *mut u8, count: usize) {
+    asm!(
+    "rep movsb",
+    in("rcx") count,
+    in("rsi") src,
+    in("rdi") dst,
+    );
 }
 
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx"))]
@@ -124,6 +136,12 @@ mod tests {
     #[test]
     fn test_memcpy_loop() {
         test!(memcpy_loop);
+    }
+
+    #[test]
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    fn test_memcpy_movsb() {
+        test!(memcpy_movsb);
     }
 
     #[test]
