@@ -11,6 +11,10 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     // benchmarks
     let mut group = c.benchmark_group("memcpy");
+
+    // throughput in copied bytes per second (memory bandwidth is x2)
+    group.throughput(criterion::Throughput::BytesDecimal(len as u64));
+
     group.bench_function("std", |b| b.iter(|| unsafe { memcpy::memcpy_std(black_box(src), black_box(dst), black_box(len)) }));
     group.bench_function("loop", |b| b.iter(|| unsafe { memcpy::memcpy_loop(black_box(src), black_box(dst), black_box(len)) }));
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse", target_feature = "avx"))]
