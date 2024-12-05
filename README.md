@@ -28,7 +28,7 @@ LPDDR5-6400
 
 ### AMD Ryzen 9 7950X 16-Core Processor (2022)
 
-DDR5-5200
+DDR5-4800
 
 ![Performance](results/amd-ryzen-9-7950x-ddr5-32gib-kingston.svg "Performance")
 
